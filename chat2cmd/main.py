@@ -1,0 +1,1 @@
+print("hello,Welcome to Chat2Cmd.")

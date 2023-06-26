@@ -79,7 +79,18 @@ prompt会提示输入隐藏状态的密码。如果验证正确，系统会返�
 
 ### 介绍
 
+技术栈：
+
+- [LangChain](https://github.com/hwchase17/langchain)
+- [Rich](https://github.com/Textualize/rich)
+- [python-prompt-toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit)
+
 ### 安装
+
+```python
+pip freeze > requirements.txt
+```
+
 
 ### 基本用法
 
