@@ -1,0 +1,152 @@
+name: Build Chat2Cmd Executable
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_id:
+        required: true
+        type: string
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTION_SECRET }}
+        with:
+          tag_name: ${{ github.event.inputs.build_id }}
+          release_name: Release ${{ github.event.inputs.build_id }}
+          body: |
+            Release version on ${{ github.event.inputs.build_id }}.
+      - name: Write upload Url
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > my-data.txt
+      - name: Upload data as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: my-artifact
+          path: my-data.txt
+  build-on-macos:
+    runs-on: macos-latest
+    needs: create-release
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.0'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build macOS executable
+        run: |
+          pyinstaller --onefile --distpath ./dist/macos chat2cmd/chat2cmd.py
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: my-artifact
+      - name: Read file content as variable
+        id: read_file
+        run: echo "CONTENT=$(cat my-data.txt)" >> $GITHUB_ENV
+      - name: print content
+        id: print
+        run: echo "content:${{ env.CONTENT }}"
+      - name: Upload macOS executable
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTION_SECRET }}
+        with:
+          #upload_url: ${{ needs.create-release.outputs.upload_url }}
+          upload_url: ${{ env.CONTENT }}
+          asset_path: ./dist/macos/chat2cmd
+          asset_name: chat2cmd-macos-${{ github.event.inputs.build_id }}
+          asset_content_type: application/octet-stream
+
+  build-on-linux:
+    runs-on: ubuntu-latest
+    needs: create-release
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.0'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build Linux executable
+        run: |
+          pyinstaller --onefile --distpath ./dist/linux chat2cmd/chat2cmd.py
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: my-artifact
+      - name: Read file content as variable
+        id: read_file
+        run: echo "CONTENT=$(cat my-data.txt)" >> $GITHUB_ENV
+      - name: print content
+        id: print
+        run: echo "content:${{ env.CONTENT }}"
+      - name: Upload Linux executable
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTION_SECRET }}
+        with:
+          #upload_url: ${{ needs.create-release.outputs.upload_url }}
+          upload_url: ${{ env.CONTENT }}
+          asset_path: ./dist/linux/chat2cmd
+          asset_name: chat2cmd-linux-${{ github.event.inputs.build_id }}
+          asset_content_type: application/octet-stream
+
+  build-on-windows:
+    runs-on: windows-latest
+    needs: create-release
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.0'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build Windows executable
+        run: |
+          pyinstaller --onefile --distpath ./dist/windows chat2cmd/chat2cmd.py
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: my-artifact
+      - name: Load environment variables from file
+        shell: bash
+        run: echo "CONTENT=$(cat my-data.txt)" >> $GITHUB_ENV
+      - name: Upload Windows executable
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTION_SECRET }}
+        with:
+          #upload_url: ${{ needs.create-release.outputs.upload_url }}
+          upload_url: ${{ env.CONTENT }}
+          asset_path: ./dist/windows/chat2cmd.exe
+          asset_name: chat2cmd-windows-${{ github.event.inputs.build_id }}.exe
+          asset_content_type: application/octet-stream
