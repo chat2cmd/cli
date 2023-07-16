@@ -2,6 +2,12 @@ import os
 import requests
 import json
 import sys
+import re
+
+
+openai_key = os.getenv("OPENAI_API_KEY")
+model_engine = "text-davinci-003"
+
 
 def getProxy():
     """获取代理信息
@@ -17,8 +23,16 @@ def getProxy():
        }
     return {}
 
-openai_key = os.getenv("OPENAI_API_KEY")
-model_engine = "text-davinci-003"
+def isQuestionEnd(s:str):
+  """判断是否问号结尾
+
+  Args:
+      prompt (str): _description_
+  """
+  if s[-1] == '?' or s[-1] == '?':
+    return s
+  else:
+     return s+"?"
 
 def generate_stream(prompt):
   url = f"https://api.openai.com/v1/engines/{model_engine}/completions"
@@ -27,9 +41,18 @@ def generate_stream(prompt):
     "Content-Type": "application/json",
     "Authorization": f"Bearer {openai_key}"
   }
+  endPrompt=isQuestionEnd(prompt)
 
+  target_prompt="""
+  下面是一些问题,对于以下领域涉及的事件或者人物以及相关的问题请你不要作答:
+  政治、军事、种族、肤色、性别、性取向、色情、暴力
+  只回答技术问题，无需补全用户的意图,不要猜测！
+  内容如下：
+  """
+  target_prompt=target_prompt+endPrompt
+  #print(target_prompt)
   data = {
-    "prompt": prompt,
+    "prompt": target_prompt,
     "max_tokens": 1024,
     "temperature": 0.5,
     "top_p": 1,

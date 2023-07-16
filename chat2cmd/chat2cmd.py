@@ -44,7 +44,10 @@ def query(prompt):
     print("OPENAI_API_KEY environment variable not set")
     return
   if prompt.strip():
-    generate_stream(prompt=prompt)
+    try:
+      generate_stream(prompt=prompt)
+    except:
+      print("该问题无法获取答案!")
     #换一行
     print("\n")
 
