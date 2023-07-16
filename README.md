@@ -6,6 +6,18 @@
 
 > 关于Chat2cmd的详细信息，可访问:[https://chat2cmd.com](https://chat2cmd.com)（暂未开通）。
 
+## 前置准备
+
+目前v0.0.1版本已经发布，是一个最小可用版本，不过有几个前置条件：
+
+1、你需要有OpenAI的KEY，并且设置在你的**系统环境变量**中，变量名称为：`OPENAI_API_KEY`，值为KEY
+
+2、保证能直接访问OpenAI的接口，如果不想走全局，可以设置代理
+
+3、设置代理，如果国内用户可以将代理软件的IP、HOST也同样设置在**系统环境变量**中
+
+- 代理HOST：变量:`OPENAI_PROXY_HOST`,设置为你本机或者VPN地址IP
+- 代理PORT：变量：`OPENAI_PROXY_PORT`,设置为代理VPN的PORT值
 
 ## Getting Started
 
