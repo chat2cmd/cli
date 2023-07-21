@@ -1,53 +1,23 @@
-import os
 import sys
-#from rich.console import Console
-#from rich.markdown import Markdown
 
-from openai_call import generate_stream
+from utils import cmd_utils
+from ai import zp_call,openai_call
+from core.core import Assistant
 
-#console = Console()
-
-def writeStyle(text:str,style:str):
-    """按分割打印
-
-    Args:
-        text (str): _description_
-        style (str): _description_
-    """
-    #welcome_text=Markdown(text)
-    #console.print(welcome_text, style=style)
-    print(text)
-
-
-def printWelcome():
-    text = """
-    欢迎使用Chat2Cmd终端程序，有任何问题都可以通过以下渠道找到我们：
-    """
-    writeStyle(text=text,style="red")
-    text="""
-    1. GitHub: https://github.com/chat2cmd
-
-    2. Twitter: xiaoymin、土猛的员外
-
-    3. exit或者\q退出
-    """
-    writeStyle(text=text,style="white")
-    text="""
-    Enjoy it~~~！！！
-    """
-    writeStyle(text=text,style="magenta")
 
 def query(prompt):
-  openai_key = os.getenv("OPENAI_API_KEY")
-  #print('prompt:',prompt)
-  if not openai_key:
-    print("OPENAI_API_KEY environment variable not set")
+  ai=cmd_utils.ai_factory()
+  if ai==Assistant.UNKOWN:
+    cmd_utils.printSetKeyError()
     return
   if prompt.strip():
     try:
-      generate_stream(prompt=prompt)
+      if ai==Assistant.OPENAI:
+        openai_call.generate_stream(prompt=prompt)
+      elif ai==Assistant.ZP:
+        zp_call.generate_stream(prompt=prompt)
     except:
-      print("该问题无法获取答案!")
+      print("该问题无法获取答案或网络异常,请重试.")
     #换一行
     print("\n")
 
@@ -58,7 +28,7 @@ def main():
   else:
     # chat2cmd 模式
     #print("Enter chat2cmd mode. Type quit to exit.") 
-    printWelcome()
+    cmd_utils.printWelcome()
     while True:
       try:
         user_input = input("chat2cmd->")
